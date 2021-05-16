@@ -1,0 +1,60 @@
+{% extends 'admin/change_form.html' %}
+{% load static %}
+
+{% block admin_change_form_document_ready %}
+{{ block.super }}
+<script>
+
+function generateRandomCharacters(size) {
+   var generatedOutput= '';
+	 var storedCharacters = '123456789ABCDEFGHIJKLMNPQRSTUVWXYZ';
+   var totalCharacterSize = storedCharacters.length;
+   for ( var index = 0; index < size; index++ ) {
+      generatedOutput+=storedCharacters.charAt(Math.floor(Math.random() * totalCharacterSize));
+   }
+   return generatedOutput;
+}
+function invprc(input) {
+    return Math.round( (100 - input)*100 ) / 100;
+}
+
+
+var MAX_DISCOUNT = "{{ original.max_discount }}";
+(function($) {
+    var xx;
+    $(".field-discount input").attr("max",MAX_DISCOUNT);
+    $(document).on('formset:added', function(event, $row, formsetName) {
+        xx = $row.find(".field-code .vTextField").val(generateRandomCharacters(6));
+        console.info($row);
+        $row.find(".field-discount input").attr("max",MAX_DISCOUNT);
+    });
+
+    $("#id_split_cut").each(function(){
+       var spc = $(this);
+
+       var slid = $(this).clone();
+       slid.attr("type","range");
+       slid.attr("step",".1");
+       slid.css("width", "300px")
+
+       var semi = $("<span><span>/</span><span class='b'></span></span>");
+       semi.insertAfter(spc);
+       var spcB = semi.find(".b");
+       spcB.html(spc.val());
+
+       $("<div/>").append(slid).insertAfter(semi);
+       spc.css("width","60px");
+       spc.change(function(){
+           slid.val(spc.val());
+           spcB.html(invprc(spc.val()))
+       });
+       slid.change(function(){
+           spc.val(slid.val());
+           spcB.html(invprc(slid.val()))
+       });
+
+    });
+
+})(django.jQuery);
+</script>
+{% endblock %}

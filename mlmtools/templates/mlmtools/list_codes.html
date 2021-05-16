@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<table class="table table-striped">
+  <thead>
+    <tr>
+        <th>code</th>
+        <th>node</th>
+        <th>valid_from</th>
+        <th>valid_until</th>
+        <th>num_used</th>
+    </tr>
+  </thead>
+    {%  for code in code_list %}
+      <tr>
+          <td style="font-family: monospace"><a href="{% url "code_detail" code.code  %}">{{ code.code }}</a></td>
+          <td>{% if code.node_id %}
+              <a href="{% url "node_detail" code.node.pk %}">{{ code.node.name }}</a><br>
+              <small class="text-muted">({% for a in code.node.ancestors %}{% if a.pk in granted_node_ids %}<a href="{% url "node_detail" a.pk %}">{{ a.name }}</a>{% else %}{{ a.name }}{% endif %}{% if not forloop.last %} / {% endif %}{% endfor %})</small>
+              {% endif %}
+          </td>
+          <td>{{ code.valid_from|default_if_none:"" }}</td>
+          <td>{{ code.valid_until|default_if_none:"" }}</td>
+          <td>{{ code.num_used }}</td>
+      </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}

@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block extrahead %}{{ block.super }}
+<style>
+tbody.odd {
+    background-color: rgba(0,0,0,.05);
+}
+.subtable {background-color: rgba(255,255,255,1);}
+</style>
+{% endblock %}
+{% block content %}
+<h2>{{ code }}</h2>
+    <table class="table table-striped">
+    <tr>
+        <td colspan="2" class="text-right">
+            <div class="form-inline float-right">
+            <form action="." method="get">
+                <input type="date" class="form-control" name="since" value="{{ since }}"/> -
+                <input type="date" class="form-control" name="until" value="{{ until }}"/>
+                <input type="submit" class="form-control" name="go" value="go">
+            </form>
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td>node</td>
+        <td>{{ code.node.name }}</td>
+    </tr>
+    <tr>
+        <td>ancestors</td>
+        <td><small class="text-muted">({% for a in code.node.ancestors %}{% if a.pk in granted_node_ids %}<a href="{% url "node_detail" a.pk %}">{{ a.name }}</a>{% else %}{{ a.name }}{% endif %}{% if not forloop.last %} / {% endif %}{% endfor %})</small></td>
+    </tr>
+    <tr>
+        <td>validity</td>
+        <td>{{ code.valid_from|default_if_none:"" }} - {{ code.valid_until|default_if_none:"" }}</td>
+    </tr>
+    <tr>
+        <td>usage count</td>
+        <td>{{ code.num_used }}</td>
+    </tr>
+    <tr>
+        <td>usage</td>
+        <td>{{ code.get_usage_display }}</td>
+    </tr>
+    <tr>
+        <td>discount</td>
+        <td>{{ code.discount }}&nbsp;{{ code.get_discount_type_display }}</td>
+    </tr>
+    </table>
+
+
+    <h3>Usages</h3>
+<table class="table ">
+<thead>
+  <tr>
+      <th>used at</th>
+      <th>used for</th>
+      <th>original amount</th>
+      <th>client</th>
+      <th>cut</th>
+  </tr>
+</thead>
+{% for u in usages %}
+    <tbody class="{% cycle "odd" "even" %}">
+    <tr>
+        <td>{{ u.used_at }}</td>
+        <td>{{ u.content_object }}</td>
+        <td>{{ u.amount }}</td>
+        <td>{{ u.user }}</td>
+        <td>{{ u.get_provision|floatformat:2 }}</td>
+    </tr>
+    <tr>
+        <td></td>
+        <td colspan="4"><table class="subtable table-sm table-bordered">
+        {% for ancestor, provision in u.get_ancestor_provisions %}
+            <tr>
+                <td>{% for x in ""|ljust:forloop.counter %}&nbsp;&nbsp;{% endfor %}{% if ancestor.id in granted_node_ids %}<a href="{% url "node_detail" ancestor.pk %}">{{ ancestor.name }}</a>{% else %}<i>-hidden-</i>{% endif %}</td>
+                <td>{% if ancestor.id in granted_node_ids %}{{ provision|floatformat:2 }}{% else %}-{% endif %}</td>
+            </tr>
+        {% endfor %}
+        <tr>
+            <td><i>discount</i></td>
+            <td>{{ u.discounted_amount|floatformat:2 }}</td>
+        </tr>
+        <tr>
+            <td>TOTAL</td>
+            <td>{{ u.control_sum|floatformat:2 }}</td>
+        </tr>
+        </table></td>
+    </tr>
+    </tbody>
+{% endfor %}
+</table>
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% load static %}
+{% block extrahead %}{{ block.super }}
+<style>
+tbody.odd {
+    background-color: rgba(0,0,0,.05);
+}
+.subtable {background-color: rgba(255,255,255,1);}
+</style>
+    <link href="{% static "/treenode/css/treenode.css" %}" type="text/css" media="all" rel="stylesheet">
+    <script src="{% static "/treenode/js/treenode.js" %}"></script>
+{% endblock %}
+{% block content %}
+<h2>{{ node.name }}</h2>
+    <table class="table table-striped">
+    <tr>
+        <td colspan="2" class="text-right">
+            <div class="form-inline float-right">
+            <form action="." method="get">
+                <input type="date" class="form-control" name="since" value="{{ since }}"/> -
+                <input type="date" class="form-control" name="until" value="{{ until }}"/>
+                <input type="submit" class="form-control" name="go" value="go">
+            </form>
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td>name</td>
+        <td>{{ node.name }}</td>
+    </tr>
+    <tr>
+        <td>ancestors</td>
+        <td><small class="text-muted">({% for a in node.ancestors %}{% if a.pk in granted_node_ids %}<a href="{% url "node_detail" a.pk %}">{{ a.name }}</a>{% else %}{{ a.name }}{% endif %}{% if not forloop.last %} / {% endif %}{% endfor %})</small></td>
+    </tr>
+    <tr>
+        <td>split</td>
+        <td>{{ node.node_cut|floatformat:2 }} / {{ node.sub_cut|floatformat:2 }}</td>
+    </tr>
+    <tr>
+        <td>total provisions</td>
+        <td>{{ total_provisions|floatformat:2 }}</td>
+    </tr>
+    </table>
+
+    <h3>Node provision totals</h3>
+<table class="table table-striped">
+{% for node, depth, sum in provisions_tree %}
+    <tr>
+        <td>{% for x in ""|ljust:depth %}&nbsp;&nbsp;{% endfor %}<a href="{% url "node_detail" node.id %}">{{ node.name }}</a></td>
+        <td>{{ sum|floatformat:2 }}</td>
+    </tr>
+{% endfor %}
+</table>
+
+
+    <h3>Provisions</h3>
+<table class="table table-sm">
+<thead>
+  <tr>
+      <th>code</th>
+      <th>used at</th>
+      <th>used for</th>
+      <th>amount</th>
+      <th>cut</th>
+      <th>source</th>
+  </tr>
+</thead>
+{% for u, provision, source in provisions %}
+    <tbody class="{% cycle "odd" "even" %}">
+    <tr>
+        <td><a href="{% url "code_detail" u.code.code %}">{{ u.code.code }}</a></td>
+        <td>{{ u.used_at }}</td>
+        <td>{{ u.content_object }}</td>
+        <td>{{ u.amount }}</td>
+        <td>{{ provision|floatformat:2 }}</td>
+        <td>({% for a in source %}<a href="{% url "node_detail" a.pk %}">{{ a.name }}</a>{% if not forloop.last %} / {% endif %}{% endfor %})</td>
+    </tr>
+    </tbody>
+{% endfor %}
+</table>
+{% endblock %}
