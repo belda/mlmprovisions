@@ -50,7 +50,7 @@ Fields:
 * **Can have children** - whether the subnodes can create subnodes (MLM needs this)  
 * **track code usage** - how many times can the code be used (limitless/only once for all/only once per user)
 
-To add attribution you have 2 methods
+To add attribution you have these methods
 ```python
 from mlmtools.models import TrackCode, CodeUse
 str_code = "CFHUMJ"
@@ -66,9 +66,9 @@ dt.save()
 CodeUse.use(str_code, client_user, target=dt, amount=dt.amount)
 ```
 
-And finaly you can check how it looks by visitin
+And finaly you can check how it looks by visiting
 ```
-http://<yoursite/mlmtools/list_codes/
+http://<yoursite>/mlmtools/list_codes/
 ```
 
 ENJOY!
