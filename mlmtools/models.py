@@ -203,7 +203,7 @@ class CodeUse(models.Model):
         :param target - the object this discount is referring to (usually the Order)
         :param amount - the original amount to calculate the discount '''
         try:
-            code = TrackCode.objects.get(code=code_str)
+            code = TrackCode.objects.get(code__iexact=code_str)
         except TrackCode.DoesNotExist:
             return False, decimal.Decimal(0.0)
         cu = CodeUse(code=code, content_object=target, user=user, amount=amount)
@@ -216,7 +216,7 @@ class CodeUse(models.Model):
         :param user - the Django user to map to
         :param target - the object this discount is referring to (usually the Order)
         :param amount - the original amount to calculate the discount '''
-        code = TrackCode.objects.get(code=code_str)
+        code = TrackCode.objects.get(code__iexact=code_str)
         cu = CodeUse(code=code, content_object=target, user=user, amount=amount)
         assert cu.can_be_used(), "This code can not be used"
         cu.save()

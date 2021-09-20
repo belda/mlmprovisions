@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="mlmprovisions", # Replace with your own username
-    version="0.1.3",
+    version="0.1.5",
     author="Belda",
     author_email="jakub.belescak@centrum.cz",
     description="Reusable Django app to track provisions for affiliate partners. Includes tools for multi-level marketing provisions.",
