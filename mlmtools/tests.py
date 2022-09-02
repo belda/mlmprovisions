@@ -136,4 +136,56 @@ class DiscountCodeTestCase(TestCase):
     def test_once(self):
         self.assertEqual((True, 30), CodeUse.test_use(self.code_once_1, self.user, target=None, amount=100))
         CodeUse.use(self.code_once_1, self.user, target=None, amount=100)
-        
+        self.assertEqual((False, 30), CodeUse.test_use(self.code_once_1, self.user, target=None, amount=100))
+        self.assertEqual((False, 30), CodeUse.test_use(self.code_once_1, self.user2, target=None, amount=100))
+
+        self.assertEqual((True, 30), CodeUse.test_use(self.code_useronce_1, self.user, target=None, amount=100))
+        CodeUse.use(self.code_useronce_1, self.user, target=None, amount=100)
+        self.assertEqual((False, 30), CodeUse.test_use(self.code_useronce_1, self.user, target=None, amount=100))
+        self.assertEqual((True, 30), CodeUse.test_use(self.code_useronce_1, self.user2, target=None, amount=100))
+
+    def test_max_n(self):
+        self.assertEqual((True, 30), CodeUse.test_use(self.code_n_2, self.user, target=None, amount=100))
+        CodeUse.use(self.code_n_2, self.user, target=None, amount=100)
+        self.assertEqual((True, 30), CodeUse.test_use(self.code_n_2, self.user, target=None, amount=100))
+        self.assertEqual((True, 30), CodeUse.test_use(self.code_n_2, self.user2, target=None, amount=100))
+        CodeUse.use(self.code_n_2, self.user2, target=None, amount=100)
+        self.assertEqual((False, 30), CodeUse.test_use(self.code_n_2, self.user, target=None, amount=100))
+        self.assertEqual((False, 30), CodeUse.test_use(self.code_n_2, self.user2, target=None, amount=100))
+
+        self.assertEqual((True, 30), CodeUse.test_use(self.code_user_n_2, self.user, target=None, amount=100))
+        CodeUse.use(self.code_user_n_2, self.user, target=None, amount=100)
+        self.assertEqual((True, 30), CodeUse.test_use(self.code_user_n_2, self.user, target=None, amount=100))
+        self.assertEqual((True, 30), CodeUse.test_use(self.code_user_n_2, self.user2, target=None, amount=100))
+        CodeUse.use(self.code_user_n_2, self.user2, target=None, amount=100)
+        self.assertEqual((True, 30), CodeUse.test_use(self.code_user_n_2, self.user, target=None, amount=100))
+        self.assertEqual((True, 30), CodeUse.test_use(self.code_user_n_2, self.user2, target=None, amount=100))
+        CodeUse.use(self.code_user_n_2, self.user, target=None, amount=100)
+        self.assertEqual((False, 30), CodeUse.test_use(self.code_user_n_2, self.user, target=None, amount=100))
+        self.assertEqual((True, 30), CodeUse.test_use(self.code_user_n_2, self.user2, target=None, amount=100))
+
+
+    def test_always(self):
+        self.assertEqual((True, 30), CodeUse.test_use(self.code_always_1, self.user, target=None, amount=100))
+        CodeUse.use(self.code_always_1, self.user, target=None, amount=100)
+        CodeUse.use(self.code_always_1, self.user, target=None, amount=100)
+        CodeUse.use(self.code_always_1, self.user2, target=None, amount=100)
+        CodeUse.use(self.code_always_1, self.user2, target=None, amount=100)
+        CodeUse.use(self.code_always_1, self.user, target=None, amount=100)
+        CodeUse.use(self.code_always_1, self.user, target=None, amount=100)
+        CodeUse.use(self.code_always_1, self.user2, target=None, amount=100)
+        CodeUse.use(self.code_always_1, self.user2, target=None, amount=100)
+        self.assertEqual((True, 30), CodeUse.test_use(self.code_always_1, self.user, target=None, amount=100))
+
+
+    def test_validity(self):
+        self.code_not_yet_valid = TrackCode.objects.create(code="VV1", usage="always", discount_type="perc", discount=30, node=self.top_node,
+                                                            valid_from="2100-01-01", valid_until="2199-01-01")
+        self.assertEqual((False, 30), CodeUse.test_use(self.code_not_yet_valid, self.user, target=None, amount=100))
+
+        self.code_no_longer_valid = TrackCode.objects.create(code="VV2", usage="always", discount_type="perc", discount=30, node=self.top_node,
+                                                            valid_from="1970-01-01", valid_until="1999-01-01")
+        self.assertEqual((False, 30), CodeUse.test_use(self.code_no_longer_valid, self.user, target=None, amount=100))
+        self.code_valid = TrackCode.objects.create(code="VV3", usage="always", discount_type="perc", discount=30, node=self.top_node,
+                                                            valid_from="1970-01-01", valid_until="2999-01-01")
+        self.assertEqual((True, 30), CodeUse.test_use(self.code_valid, self.user, target=None, amount=100))

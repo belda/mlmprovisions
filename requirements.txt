@@ -1,3 +1,3 @@
-django
+Django<4.0
 django-floppyforms
 django-treenode
