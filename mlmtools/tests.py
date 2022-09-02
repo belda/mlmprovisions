@@ -115,3 +115,25 @@ class ProvisionIntegrityTestCase(TestCase):
         assert prov_tree[0][0] == self.l3_sub1 and prov_tree[0][2] == 0 #nothing just for myself
         assert prov_tree[1][0] == self.l4_sub and prov_tree[1][2] == 75
         assert prov_tree[2][0] == self.l5_sub and prov_tree[2][2] == 37.5
+
+
+class DiscountCodeTestCase(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='testuser', password="12345")
+        self.user2 = User.objects.create_user(username='testuser2', password="12345")
+        self.user3 = User.objects.create_user(username='testuser3', password="12345")
+        self.top_node = MarketerNode.objects.create(name="Top Base", split_type="fixed", split_cut=60, owner=self.user )
+        self.code_always_1 = TrackCode.objects.create(code="ALWAYS1", usage="always", discount_type="perc", discount=30, node=self.top_node)
+        self.code_always_2 = TrackCode.objects.create(code="ALWAYS2", usage="always", discount_type="perc", discount=30, node=self.top_node)
+        self.code_useronce_1 = TrackCode.objects.create(code="USER1", usage="useronce", discount_type="perc", discount=30, node=self.top_node)
+        self.code_useronce_2 = TrackCode.objects.create(code="USER2", usage="useronce", discount_type="perc", discount=30, node=self.top_node)
+        self.code_user_n_2 = TrackCode.objects.create(code="UN2", usage="useronce", discount_type="perc", max_n=2, discount=30, node=self.top_node)
+        self.code_once_1 = TrackCode.objects.create(code="ONCE1", usage="once", discount_type="perc", discount=30, node=self.top_node)
+        self.code_once_2 = TrackCode.objects.create(code="ONCE2", usage="once", discount_type="perc", discount=30, node=self.top_node)
+        self.code_n_2 = TrackCode.objects.create(code="N2", usage="once", discount_type="perc", max_n=2, discount=30, node=self.top_node)
+
+
+    def test_once(self):
+        self.assertEqual((True, 30), CodeUse.test_use(self.code_once_1, self.user, target=None, amount=100))
+        CodeUse.use(self.code_once_1, self.user, target=None, amount=100)
+        

@@ -6,7 +6,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils.translation import ugettext as _
 from treenode.models import TreeNodeModel
-
+from django.utils.timezone import now
 
 
 class TrackCode(models.Model):
@@ -16,9 +16,10 @@ class TrackCode(models.Model):
     valid_from = models.DateField(null=True, blank=True)
     valid_until = models.DateField(null=True, blank=True)
     USAGE_CHOICES = ( ("always", _("always",)),
-                      ("useronce", _("1x / user")),
-                      ("once", _("once only")))
+                      ("useronce", _("Nx / user")),
+                      ("once", _("Nx / user")))
     usage = models.CharField(max_length=8, choices=USAGE_CHOICES, default="useronce")
+    max_n = models.PositiveIntegerField(default=1, help_text=_("The maximum number of codes applied to usage choices"))
     discount = models.DecimalField(default=10, decimal_places=2, max_digits=5)
     DISCOUNT_TYPE_CHOICES = ( ("perc", "%"),
                               ("CZK", "CZK"))
@@ -186,11 +187,15 @@ class CodeUse(models.Model):
 
     def can_be_used(self):
         ''' this method should be called before save '''
+        if self.code.valid_from and self.code.valid_from > now().date():
+            return False
+        if self.code.valid_until and self.code.valid_until <= now().date():
+            return False
         if self.code.usage == "once":
-            if CodeUse.objects.filter(code=self.code).exists():
+            if CodeUse.objects.filter(code=self.code).count() >= self.code.max_n:
                 return False
         elif self.code.usage == "useronce":
-            if CodeUse.objects.filter(code=self.code, user=self.user).exists():
+            if CodeUse.objects.filter(code=self.code, user=self.user).count() >= self.code.max_n:
                 return False
         #TODO can be applied to target
         return True
