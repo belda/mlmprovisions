@@ -17,7 +17,7 @@ class TrackCode(models.Model):
     valid_until = models.DateField(null=True, blank=True)
     USAGE_CHOICES = ( ("always", _("always",)),
                       ("useronce", _("Nx / user")),
-                      ("once", _("Nx / user")))
+                      ("once", _("Nx / global")))
     usage = models.CharField(max_length=8, choices=USAGE_CHOICES, default="useronce")
     max_n = models.PositiveIntegerField(default=1, help_text=_("The maximum number of codes applied to usage choices"))
     discount = models.DecimalField(default=10, decimal_places=2, max_digits=5)
